@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Upload, X, Download, Loader2, ChevronLeft, ChevronRight, Palette, Heart, Leaf, Star, Coffee, Smile, MonitorSmartphone } from 'lucide-react';
 
-// Custom CSS for fonts, stamp masking, themes, and animations
 const customStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@400;600;700&family=Quicksand:wght@600;700&family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@600;700&display=swap');
 
@@ -204,7 +203,7 @@ const THEMES = [
 
 const DEFAULT_STICKERS = ['🎀', '💖', '🌸', '✨', '⭐', '📌', '📍', '🌼', '🦋', '🎈', '🎉', '🧸', '☕', '🍰', '💌', '🐾', '🍀', '🍎', '🎨', '🎵'];
 
-// --- THEME DECORATIONS COMPONENTS ---
+
 const WashiTape = ({ color, top, left, right, bottom, rotate, width = "120px", height = "30px" }) => (
   <div 
     className="absolute pointer-events-none mix-blend-multiply opacity-50 shadow-sm"
@@ -253,7 +252,6 @@ const ThemeDecorations = ({ theme }) => {
   return <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">{elements[theme]}</div>;
 };
 
-// Generate a blank grid for a specific month
 const generateGrid = (year, month) => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
@@ -269,7 +267,6 @@ const generateGrid = (year, month) => {
   }));
 };
 
-// --- CROP MODAL COMPONENT ---
 const CropModal = ({ src, onPunch, onClose }) => {
   const imgRef = useRef(null);
   const [mousePos, setMousePos] = useState(null);
@@ -374,11 +371,9 @@ const CropModal = ({ src, onPunch, onClose }) => {
 };
 
 export default function App() {
-  // --- STATE ---
   const [currentTheme, setCurrentTheme] = useState('classic');
   const [showThemes, setShowThemes] = useState(false);
   
-  // Stickers State
   const [showStickers, setShowStickers] = useState(false);
   const [customStickers, setCustomStickers] = useState([]);
   const [newStickerInput, setNewStickerInput] = useState('');
@@ -395,7 +390,6 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedSticker, setSelectedSticker] = useState(null);
   
-  // Mobile / Touch Drag & Drop State
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [mobileDraggedCellId, setMobileDraggedCellId] = useState(null);
 
@@ -405,7 +399,6 @@ export default function App() {
   const [isDownloading, setIsDownloading] = useState(false);
   const calendarRef = useRef(null);
 
-  // Check for mobile screen size on initial load
   useEffect(() => {
     if (window.innerWidth < 768) {
       setShowMobileWarning(true);
@@ -429,7 +422,6 @@ export default function App() {
     });
   }, [monthKey, currentDate]);
 
-  // Unified Swap Logic for Desktop D&D and Mobile Touch D&D
   const executeSwap = useCallback((sourceId, targetId) => {
     setGrid(prev => {
       const newGrid = [...prev];
@@ -456,7 +448,6 @@ export default function App() {
     }, 400);
   }, [setGrid]);
 
-  // --- MOUSE/TOUCH TRACKING ---
   useEffect(() => {
     const handlePointerMove = (clientX, clientY, isTouch) => {
       if (isTouch) setIsTouchDevice(true);
@@ -468,7 +459,6 @@ export default function App() {
     const handleMouseMove = (e) => handlePointerMove(e.clientX, e.clientY, false);
     const handleTouchMove = (e) => handlePointerMove(e.touches[0].clientX, e.touches[0].clientY, true);
     
-    // Smooth custom touch drag execution
     const handleTouchEnd = (e) => {
       if (mobileDraggedCellId !== null) {
         const touch = e.changedTouches[0];
@@ -489,7 +479,6 @@ export default function App() {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    // Use non-passive listener for touchmove if we need to prevent scrolling during tool aim
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchstart', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd);
@@ -504,7 +493,6 @@ export default function App() {
     };
   }, [mobileDraggedCellId, executeSwap]);
 
-  // --- INTERACTIONS ---
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -567,9 +555,8 @@ export default function App() {
     setGrid(prev => prev.map(cell => cell.id === cellId ? { ...cell, stickers: (cell.stickers || []).filter(s => s.id !== stickerId) } : cell));
   };
 
-  // HTML5 Drag & Drop (Desktop)
   const handleDragStart = (e, cellId) => {
-    if (isTouchDevice) return; // Prevent desktop events from firing on mobile polyfills
+    if (isTouchDevice) return; 
     e.dataTransfer.setData('cellId', cellId);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -580,7 +567,6 @@ export default function App() {
     if (!isNaN(sourceCellId)) executeSwap(sourceCellId, targetCellId);
   };
 
-  // Custom Touch Drag & Drop (Mobile)
   const handleTouchStartStamp = (e, cellId) => {
     if (selectedImage || selectedSticker) return;
     setMobileDraggedCellId(cellId);
@@ -591,7 +577,6 @@ export default function App() {
     try {
       setIsDownloading(true);
       const htmlToImage = await import('https://esm.sh/html-to-image');
-      // Added pixelRatio: 3 to significantly increase download quality and resolution
       const dataUrl = await htmlToImage.toPng(calendarRef.current, { 
         quality: 1.0, 
         pixelRatio: 3, 
@@ -630,7 +615,6 @@ export default function App() {
       <style>{customStyles}</style>
       <ThemeDecorations theme={currentTheme} />
 
-      {/* MOBILE WARNING MODAL */}
       {showMobileWarning && (
         <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full flex flex-col items-center text-center animate-pop">
@@ -651,17 +635,14 @@ export default function App() {
         </div>
       )}
 
-      {/* HEADER */}
       <div className="w-full text-center pt-6 z-10 relative select-none px-4">
         <h1 className="font-handwriting text-5xl md:text-6xl text-gray-800 drop-shadow-sm">
           Scrap Book
         </h1>
       </div>
 
-      {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col items-center justify-start sm:justify-center p-0 sm:p-4 md:p-8 mb-32 z-10 relative">
         
-        {/* MONTH NAVIGATION */}
         <div className="w-full max-w-4xl flex items-center justify-center gap-4 sm:gap-6 md:gap-8 mb-2 px-2 sm:px-4 select-none mt-4 sm:mt-0">
           <button onClick={handlePrevMonth} className="p-1 sm:p-1.5 bg-white border border-gray-100 shadow-sm hover:bg-gray-50 rounded-full transition-colors text-gray-500 hover:text-gray-800">
             <ChevronLeft size={20} />
@@ -674,13 +655,10 @@ export default function App() {
           </button>
         </div>
 
-        {/* CALENDAR GRID */}
-        {/* On mobile, if a tool is active, touch-none prevents the screen from scrolling while you drag your thumb to aim */}
         <div 
           ref={calendarRef}
           className={`w-full max-w-4xl aspect-[4/5] sm:aspect-[4/3] min-h-[400px] bg-white border-y sm:border border-gray-200 sm:shadow-sm flex flex-col select-none overflow-hidden relative ${(selectedImage || selectedSticker || mobileDraggedCellId !== null) ? 'touch-none' : ''}`}
         >
-          {/* Internal Calendar Header (Saved in download) */}
           <div className="w-full px-3 sm:px-6 py-3 sm:py-4 bg-white flex items-baseline gap-2 border-b border-gray-100 shrink-0 z-10">
             <h2 className="text-xl sm:text-3xl font-bold text-gray-800 tracking-tight transition-all duration-500" style={{ fontFamily: 'var(--font-theme)' }}>
               {MONTHS[currentDate.getMonth()]}
@@ -698,7 +676,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Grid Cells */}
           <div className="flex-1 grid grid-cols-7 auto-rows-fr">
             {grid.map((cell) => (
               <div 
@@ -719,7 +696,6 @@ export default function App() {
                   </span>
                 )}
                 
-                {/* Placed Photo Stamps */}
                 {cell.imageUrl && (
                   <>
                     <Stamp 
@@ -734,7 +710,6 @@ export default function App() {
                     {!selectedImage && !selectedSticker && mobileDraggedCellId === null && (
                       <button 
                         onClick={(e) => handleRemoveImage(e, cell.id)}
-                        // On mobile (sm:hidden), make it always slightly visible so users know they can tap to delete. 
                         className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full p-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity z-30 shadow-md hover:bg-red-600 scale-75 sm:scale-100"
                         title="Remove stamp"
                       >
@@ -744,7 +719,6 @@ export default function App() {
                   </>
                 )}
 
-                {/* Placed Stickers */}
                 {cell.stickers?.map(sticker => (
                   <div 
                     key={sticker.id}
@@ -761,14 +735,12 @@ export default function App() {
             ))}
           </div>
 
-          {/* Download Watermark */}
           <div className="absolute bottom-1 right-2 text-[8px] sm:text-[10px] md:text-xs font-bold text-gray-400 opacity-40 z-0 pointer-events-none select-none tracking-widest transition-all duration-500" style={{ fontFamily: 'var(--font-theme)' }}>
             ScrapIt
           </div>
         </div>
       </div>
 
-      {/* POPUPS (Themes & Stickers) */}
       {showThemes && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 sm:left-24 sm:translate-x-0 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex gap-2 sm:gap-3 animate-pop z-50">
            {THEMES.map(t => (
@@ -818,7 +790,7 @@ export default function App() {
         </div>
       )}
 
-      {/* BOTTOM TRAY */}
+      {/* BOTTOM PART */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 sm:p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40 overscroll-x-contain">
         <div className="max-w-5xl mx-auto flex items-center gap-3 sm:gap-4 overflow-x-auto hide-scrollbar pb-1 sm:pb-2 px-1 sm:px-2">
           
@@ -855,13 +827,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* CUSTOM CURSORS / TOOLS (Mobile offset dynamically) */}
       
-      {/* 1. The Punch Stamp Tool */}
       {selectedImage && (
         <div 
           className={`fixed pointer-events-none z-50 ${isPunching ? 'animate-punch' : ''}`}
-          // On mobile, the tool is shifted UP much higher (-120%) so it sits above the user's thumb instead of hidden underneath it.
           style={{ '--punch-start-y': isTouchDevice ? '-120%' : '-40%', left: `${mousePos.x}px`, top: `${mousePos.y}px`, transform: `translate(-50%, var(--punch-start-y))` }}
         >
           <div className="w-32 h-52 sm:w-40 sm:h-64 rounded-[2rem] shadow-[0_15px_30px_rgba(0,0,0,0.3),inset_0_4px_10px_rgba(255,255,255,0.5)] border-4 flex flex-col items-center pt-6 sm:pt-8 relative overflow-hidden backdrop-blur-sm transition-colors duration-500 scale-90 sm:scale-100" style={{ backgroundColor: 'var(--tool-main)', borderColor: 'var(--tool-accent-light)' }}>
@@ -889,11 +858,9 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. The Sticker Placement Cursor */}
       {selectedSticker && !selectedImage && (
         <div 
           className="fixed pointer-events-none z-50 flex flex-col items-center"
-          // Shift sticker up on mobile as well
           style={{ left: `${mousePos.x}px`, top: `${mousePos.y}px`, transform: `translate(-50%, ${isTouchDevice ? '-150%' : '-50%'})` }}
         >
           <span className="text-3xl sm:text-4xl drop-shadow-md animate-pop">{selectedSticker}</span>
@@ -903,7 +870,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. Ghost Drag for Mobile Stamp Moving */}
       {mobileDraggedCellId !== null && isTouchDevice && (
         <div 
           className="fixed pointer-events-none z-[60]"
@@ -915,7 +881,6 @@ export default function App() {
         </div>
       )}
       
-      {/* PUNCH MODAL */}
       {cropSource && (
         <CropModal 
           src={cropSource} 
